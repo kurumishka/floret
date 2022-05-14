@@ -87,7 +87,7 @@ func parseConfigAttachments(picsPath, capsPath string) (*Attachments, error) {
     if !strings.HasSuffix(picsPath, "/") {
         picsPath += "/"
     }
-    logging(true, "инициализируём байтовые массивы для картинок...")
+    logging(true, "инициализируем байтовые массивы для картинок...")
     var (
         attachments = new(Attachments)
         failed      = 0
@@ -138,8 +138,20 @@ func parseConfig() *Config {
         logging(false, "фатальная ошибка, не удалось найти ни одной картинки для загрузки.")
         os.Exit(2)
     }
+    setConfigFlags(&config)
     logging(true, "ok, необходимые данные получены.\n", config)
     return &config
+}
+
+func setConfigFlags(config *Config) {
+    check := func(field *string, value *string) {
+        if *value != "" {
+            *field = *value
+        }
+    }
+    check(&config.Token, token)
+    check(&config.Gid, gid)
+    check(&config.Aid, aid)
 }
 
 func main() {
