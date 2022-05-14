@@ -1,14 +1,14 @@
 package main
 
 import (
+    "bytes"
     "encoding/json"
+    "fmt"
+    "io/ioutil"
+    "math/rand"
+    "mime/multipart"
     "net/http"
     "net/url"
-    "io/ioutil"
-    "fmt"
-    "mime/multipart"
-    "bytes"
-    "math/rand"
 )
 
 const (
@@ -17,8 +17,8 @@ const (
 )
 
 type ErrorT struct {
-    ErrorCode int `json:"error_code"`
-    ErrorMsg string `json:"error_msg"`
+    ErrorCode int    `json:"error_code"`
+    ErrorMsg  string `json:"error_msg"`
 }
 
 type Error struct {
@@ -27,13 +27,13 @@ type Error struct {
 
 func (e Error) String() string {
     return fmt.Sprintf("Error_code = %d: %s",
-                       e.ErrorV.ErrorCode, e.ErrorV.ErrorMsg)
+        e.ErrorV.ErrorCode, e.ErrorV.ErrorMsg)
 }
 
 type GetUploadServerResponse struct {
     UploadUrl string `json:"upload_url"`
-    AlbumId   int `json:"album_id"`
-    UserId    int `json:"user_id"`
+    AlbumId   int    `json:"album_id"`
+    UserId    int    `json:"user_id"`
 }
 
 type GetUploadServer struct {
@@ -72,10 +72,10 @@ func callMethod(method string, params map[string]string) ([]byte, error) {
 func validateConfig(config *Config) bool {
     params := map[string]string{
         "access_token": config.Token,
-        "owner_id"    : fmt.Sprintf("-%s", config.Gid),
-        "album_id"    : config.Aid,
-        "count"       : "1",
-        "v"           : VERSION,
+        "owner_id":     fmt.Sprintf("-%s", config.Gid),
+        "album_id":     config.Aid,
+        "count":        "1",
+        "v":            VERSION,
     }
     _, err := callMethod("photos.get", params)
     if err != nil {
@@ -88,9 +88,9 @@ func validateConfig(config *Config) bool {
 func getUploadServer(config *Config) (string, error) {
     params := map[string]string{
         "access_token": config.Token,
-        "group_id"    : config.Gid,
-        "album_id"    : config.Aid,
-        "v"           : VERSION,
+        "group_id":     config.Gid,
+        "album_id":     config.Aid,
+        "v":            VERSION,
     }
     cont, err := callMethod("photos.getUploadServer", params)
     if err != nil {

@@ -1,31 +1,31 @@
 package main
 
 import (
-    "flag"
-    "os"
-    "fmt"
-    "log"
-    "io/ioutil"
     "encoding/json"
+    "flag"
+    "fmt"
+    "io/ioutil"
+    "log"
+    "os"
     "strings"
 )
 
 var (
-    verbose   = flag.Bool("v", false, "подробные логи.")
-    colorize  = flag.Bool("c", false, "расскрашивать картинки.")
-    noCaps    = flag.Bool("no-caps", false, "не прикреплять описания.")
+    verbose  = flag.Bool("v", false, "подробные логи.")
+    colorize = flag.Bool("c", false, "расскрашивать картинки.")
+    noCaps   = flag.Bool("no-caps", false, "не прикреплять описания.")
 
-    token     = flag.String("token", "", "использовать заданный токен.")
-    aid       = flag.String("aid", "", "использовать заданный album_id.")
-    gid       = flag.String("gid", "", "использовать заданный group_id.")
+    token = flag.String("token", "", "использовать заданный токен.")
+    aid   = flag.String("aid", "", "использовать заданный album_id.")
+    gid   = flag.String("gid", "", "использовать заданный group_id.")
 
     configDir = flag.String("conf", "./res/config.json", "файл конфига.")
     picsDir   = flag.String("pics", "./res/pics/", "директория с картинками.")
     capsDir   = flag.String("caps", "./res/captions.conf", "директория с описаниями.")
 
-    threads   = flag.Uint64("th", 1, "кол-во потоков.")
-    iters     = flag.Uint64("i", 1, "кол-во итерации.")
-    timeout   = flag.Uint64("t", 0, "время ожидания (сек) между итерациями.")
+    threads = flag.Uint64("th", 1, "кол-во потоков.")
+    iters   = flag.Uint64("i", 1, "кол-во итерации.")
+    timeout = flag.Uint64("t", 0, "время ожидания (сек) между итерациями.")
 )
 
 var logging = func(extra bool, args ...interface{}) {
@@ -37,7 +37,7 @@ var logging = func(extra bool, args ...interface{}) {
 
 type Picture struct {
     Content []byte
-    Name string
+    Name    string
 }
 
 type Attachments struct {
@@ -62,7 +62,7 @@ func (c Credits) String() string {
 
 func (c Config) String() string {
     return fmt.Sprintf("Token = %q; Gid = %q; Aid = %q; Pics = %d; Caps = %d.",
-                        c.Token, c.Gid, c.Aid, len(c.Pictures), len(c.Captions))
+        c.Token, c.Gid, c.Aid, len(c.Pictures), len(c.Captions))
 }
 
 func parseConfigCredits(path string) (*Credits, error) {
@@ -92,33 +92,33 @@ func parseConfigAttachments(picsPath, capsPath string) (*Attachments, error) {
         attachments = new(Attachments)
         failed      = 0
         predicate   = func(name string) bool {
-                return strings.HasSuffix(name, ".jpg") ||
-                       strings.HasSuffix(name, ".png") ||
-                       strings.HasSuffix(name, ".jpeg")
-                 }
+            return strings.HasSuffix(name, ".jpg") ||
+                strings.HasSuffix(name, ".png") ||
+                strings.HasSuffix(name, ".jpeg")
+        }
     )
     for _, pic := range pics {
         if predicate(pic.Name()) {
             fname := picsPath + pic.Name()
             cont, err := ioutil.ReadFile(fname)
             if err != nil {
-               logging(true, err)
-               logging(true, "не удалось инициализировать", pic.Name())
-               failed++
-               continue
+                logging(true, err)
+                logging(true, "не удалось инициализировать", pic.Name())
+                failed++
+                continue
             }
             attachments.Pictures = append(attachments.Pictures, Picture{cont, fname})
         }
     }
     logging(true, fmt.Sprintf("%d/%d картинок инициализировано.",
-                              len(attachments.Pictures),
-                              len(attachments.Pictures) + failed))
+        len(attachments.Pictures),
+        len(attachments.Pictures)+failed))
     attachments.Captions = strings.Split(string(caps), "\n\n")
     return attachments, nil
 }
 
 func parseConfig() *Config {
-    config := Config{Credits: Credits{ *token, *gid, *aid }}
+    config := Config{Credits: Credits{*token, *gid, *aid}}
     logging(true, "читаем файл конфига...")
     credits, err := parseConfigCredits(*configDir)
     if err != nil {
