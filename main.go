@@ -35,8 +35,13 @@ var logging = func(extra bool, args ...interface{}) {
     log.Println(args...)
 }
 
+type Picture struct {
+    Content []byte
+    Name string
+}
+
 type Attachments struct {
-    Pictures [][]byte
+    Pictures []Picture
     Captions []string
 }
 
@@ -94,14 +99,15 @@ func parseConfigAttachments(picsPath, capsPath string) (*Attachments, error) {
     )
     for _, pic := range pics {
         if predicate(pic.Name()) {
-            cont, err := ioutil.ReadFile(picsPath + pic.Name())
+            fname := picsPath + pic.Name()
+            cont, err := ioutil.ReadFile(fname)
             if err != nil {
-                logging(true, err)
-                logging(true, "не удалось инициализировать", pic.Name())
-                failed++
-                continue
+               logging(true, err)
+               logging(true, "не удалось инициализировать", pic.Name())
+               failed++
+               continue
             }
-            attachments.Pictures = append(attachments.Pictures, cont)
+            attachments.Pictures = append(attachments.Pictures, Picture{cont, fname})
         }
     }
     logging(true, fmt.Sprintf("%d/%d картинок инициализировано.",
@@ -126,6 +132,10 @@ func parseConfig() *Config {
     if config.Attachments, err = parseConfigAttachments(*picsDir, *capsDir); err != nil {
         logging(true, err)
         logging(false, "фатальная ошибка, не удалось получить необходимые данные.")
+        os.Exit(2)
+    }
+    if len(config.Attachments.Pictures) == 0 {
+        logging(false, "фатальная ошибка, не удалось найти ни одной картинки для загрузки.")
         os.Exit(2)
     }
     logging(true, "ok, необходимые данные получены.\n", config)

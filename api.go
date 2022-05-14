@@ -1,7 +1,6 @@
 package main
 
 import (
-    "time"
     "encoding/json"
     "net/http"
     "net/url"
@@ -113,25 +112,18 @@ func uploadOnServer(config *Config, upserver string) (*UploadServerResponse, err
     logging(true, "создаём multipart форму...")
     for i := 0; i < 5; i++ {
         file := config.Pictures[rand.Intn(len(config.Pictures))]
-        fname := fmt.Sprintf("file%d")
-        part, err := writer.CreateFormFile(fname, "image.png")
+        fname := fmt.Sprintf("file%d", i)
+        part, err := writer.CreateFormFile(fname, file.Name)
         if err != nil {
             writer.Close()
             return nil, err
         }
-        part.Write(file)
+        part.Write(file.Content)
     }
     writer.Close()
     logging(true, "POST:", upserver)
 
-    req, err := http.NewRequest("POST", upserver, bytes.NewReader(body.Bytes()))
-    if err != nil {
-        return nil, err
-    }
-    req.Header.Set("Content-Type", writer.FormDataContentType())
-
-    client := &http.Client{ Timeout: time.Second * 10 }
-    resp, err := client.Do(req)
+    resp, err := http.Post(upserver, writer.FormDataContentType(), body)
     if err != nil {
         return nil, err
     }
