@@ -172,7 +172,7 @@ func upload(config *Config, upserver string, ch chan<- string) {
     start := time.Now()
     serverAnswer, err := uploadOnServer(config, upserver)
     if err != nil {
-        ch <- fmt.Sprintf("%.2fs ошибка, не удалось загрузить картинки на сервер. err = %v",
+        ch <- fmt.Sprintf("%.2fs err, upload_on_server, %v",
             time.Since(start).Seconds(), err)
         return
     }
@@ -190,7 +190,7 @@ func upload(config *Config, upserver string, ch chan<- string) {
     }
     _, err = callMethod("photos.save", params)
     if err != nil {
-        ch <- fmt.Sprintf("%.2fs ошибка, не удалось сохранить картинки. err = %v",
+        ch <- fmt.Sprintf("%.2fs err, photos.save, %v",
             time.Since(start).Seconds(), err)
     } else {
         ch <- fmt.Sprintf("%.2fs ok, картинки успешно сохранены.",
