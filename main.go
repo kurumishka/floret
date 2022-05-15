@@ -93,18 +93,21 @@ func parseConfigAttachments(picsPath, capsPath string) (*Attachments, error) {
     if err != nil {
         return nil, err
     }
-    caps, err := ioutil.ReadFile(capsPath)
-    if err != nil {
-        return nil, err
+    attachments := new(Attachments)
+    if !*noCaps {
+        caps, err := ioutil.ReadFile(capsPath)
+        if err != nil {
+            return nil, err
+        }
+        attachments.Captions = strings.Split(string(caps), "\n\n")
     }
     if !strings.HasSuffix(picsPath, "/") {
         picsPath += "/"
     }
     logging(false, "инициализируем байтовые массивы для картинок...")
     var (
-        attachments = new(Attachments)
-        failed      = 0
-        predicate   = func(name string) bool {
+        failed    = 0
+        predicate = func(name string) bool {
             return strings.HasSuffix(name, ".jpg") ||
                 strings.HasSuffix(name, ".png") ||
                 strings.HasSuffix(name, ".jpeg")
@@ -126,7 +129,6 @@ func parseConfigAttachments(picsPath, capsPath string) (*Attachments, error) {
     logging(false, fmt.Sprintf("%d/%d картинок инициализировано.",
         len(attachments.Pictures),
         len(attachments.Pictures)+failed))
-    attachments.Captions = strings.Split(string(caps), "\n\n")
     return attachments, nil
 }
 
