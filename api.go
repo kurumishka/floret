@@ -60,13 +60,15 @@ func callMethod(method string, params map[string]string) ([]byte, error) {
     }
     defer resp.Body.Close()
     cont, err := ioutil.ReadAll(resp.Body)
-
+    if err != nil {
+        return make([]byte, 0), err
+    }
     errInstance := new(Error)
     json.Unmarshal(cont, errInstance)
     if errInstance.ErrorV.ErrorCode != 0 {
         return make([]byte, 0), fmt.Errorf("%s", errInstance.String())
     }
-    return cont, err
+    return cont, nil
 }
 
 func validateConfig(config *Config) bool {

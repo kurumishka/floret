@@ -1,13 +1,19 @@
 package main
 
 import (
+    "time"
     "encoding/json"
     "flag"
     "fmt"
     "io/ioutil"
+    "math/rand"
     "log"
     "os"
     "strings"
+)
+
+const (
+    BUFSIZE = 2048
 )
 
 var (
@@ -87,7 +93,7 @@ func parseConfigAttachments(picsPath, capsPath string) (*Attachments, error) {
     if !strings.HasSuffix(picsPath, "/") {
         picsPath += "/"
     }
-    logging(true, "инициализируем байтовые массивы для картинок...")
+    logging(false, "инициализируем байтовые массивы для картинок...")
     var (
         attachments = new(Attachments)
         failed      = 0
@@ -110,9 +116,9 @@ func parseConfigAttachments(picsPath, capsPath string) (*Attachments, error) {
             attachments.Pictures = append(attachments.Pictures, Picture{cont, fname})
         }
     }
-    logging(true, fmt.Sprintf("%d/%d картинок инициализировано.",
+    logging(false, fmt.Sprintf("%d/%d картинок инициализировано.",
         len(attachments.Pictures),
-        len(attachments.Pictures)+failed))
+        len(attachments.Pictures) + failed))
     attachments.Captions = strings.Split(string(caps), "\n\n")
     return attachments, nil
 }
@@ -139,7 +145,8 @@ func parseConfig() *Config {
         os.Exit(2)
     }
     setConfigFlags(&config)
-    logging(true, "ok, необходимые данные получены.\n", config)
+    logging(false, "ok, необходимые данные получены.")
+    logging(true, config)
     return &config
 }
 
@@ -154,20 +161,50 @@ func setConfigFlags(config *Config) {
     check(&config.Aid, aid)
 }
 
+func upload(config *Config, upserver string, ch chan<- string) {
+    start := time.Now()
+    serverAnswer, err := uploadOnServer(config, upserver)
+    if err != nil {
+        ch <- fmt.Sprintf("%.2fs ошибка, не удалось загрузить картинки на сервер. err = %v",
+                time.Since(start).Seconds(), err)
+        return
+    }
+    params := map[string]string{
+        "access_token": config.Token,
+        "group_id": config.Gid,
+        "album_id": config.Aid,
+        "server": fmt.Sprintf("%d", serverAnswer.Server),
+        "photos_list": serverAnswer.PhotosList,
+        "hash": serverAnswer.Hash,
+        "v": VERSION,
+    }
+    if !*noCaps {
+        params["caption"] = config.Captions[rand.Intn(len(config.Captions))]
+    }
+    _, err = callMethod("photos.save", params)
+    if err != nil {
+        ch <- fmt.Sprintf("%.2fs ошибка, не удалось сохранить картинки. err = %v",
+                time.Since(start).Seconds(), err)
+    } else {
+        ch <- fmt.Sprintf("%.2fs ok, картинки успешно сохранены.",
+                time.Since(start).Seconds())
+    }
+}
+
 func main() {
     flag.Parse()
     config := parseConfig()
-    logging(true, "проверяем валидность конфига...")
+    logging(false, "проверяем валидность конфига...")
     ok := validateConfig(config)
     if !ok {
         logging(false, "фатальная ошибка, проверка конфига не удалась.")
         os.Exit(2)
     }
-    logging(true, "ok, конфиг прошёл проверку.")
+    logging(false, "ok, конфиг прошёл проверку.")
     logging(true, "получаем URL для загрузки картинок на сервер...")
     upserver, err := getUploadServer(config)
     if err != nil {
-        logging(true, err)
+        logging(false, err)
         logging(false, "фатальная ошибка, не удалось получить URL для загрузки.")
         os.Exit(2)
     }
@@ -176,7 +213,24 @@ func main() {
     answer, err := uploadOnServer(config, upserver)
     if err != nil {
         logging(false, "не удалось загрузить картинки на сервер.")
-        logging(true, err)
+        logging(false, err)
     }
     logging(true, answer)
+    logging(false, "сохраняем картинки в альбом...")
+    logging(true, fmt.Sprintf("потоков = %d, итераций = %d.", *threads, *iters))
+
+    ch := make(chan string, BUFSIZE)
+    for i := uint64(1); i <= *iters; i++ {
+        logging(false, fmt.Sprintf("итерация номер %d...", i))
+        for j := uint64(0); j < *threads; j++ {
+            go upload(config, upserver, ch)
+        }
+        logging(false, "потоки запущены.")
+        for j := uint64(0); j < *threads; j++ {
+            logging(false, <-ch)
+        }
+        logging(true, fmt.Sprintf("TIMEOUT: %d секунд.", *timeout))
+        time.Sleep(time.Second * time.Duration(*timeout))
+    }
+    logging(false, "успешно завершено.")
 }
