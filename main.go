@@ -1,15 +1,15 @@
 package main
 
 import (
-    "time"
     "encoding/json"
     "flag"
     "fmt"
     "io/ioutil"
-    "math/rand"
     "log"
+    "math/rand"
     "os"
     "strings"
+    "time"
 )
 
 const (
@@ -118,7 +118,7 @@ func parseConfigAttachments(picsPath, capsPath string) (*Attachments, error) {
     }
     logging(false, fmt.Sprintf("%d/%d картинок инициализировано.",
         len(attachments.Pictures),
-        len(attachments.Pictures) + failed))
+        len(attachments.Pictures)+failed))
     attachments.Captions = strings.Split(string(caps), "\n\n")
     return attachments, nil
 }
@@ -166,17 +166,17 @@ func upload(config *Config, upserver string, ch chan<- string) {
     serverAnswer, err := uploadOnServer(config, upserver)
     if err != nil {
         ch <- fmt.Sprintf("%.2fs ошибка, не удалось загрузить картинки на сервер. err = %v",
-                time.Since(start).Seconds(), err)
+            time.Since(start).Seconds(), err)
         return
     }
     params := map[string]string{
         "access_token": config.Token,
-        "group_id": config.Gid,
-        "album_id": config.Aid,
-        "server": fmt.Sprintf("%d", serverAnswer.Server),
-        "photos_list": serverAnswer.PhotosList,
-        "hash": serverAnswer.Hash,
-        "v": VERSION,
+        "group_id":     config.Gid,
+        "album_id":     config.Aid,
+        "server":       fmt.Sprintf("%d", serverAnswer.Server),
+        "photos_list":  serverAnswer.PhotosList,
+        "hash":         serverAnswer.Hash,
+        "v":            VERSION,
     }
     if !*noCaps {
         params["caption"] = config.Captions[rand.Intn(len(config.Captions))]
@@ -184,10 +184,10 @@ func upload(config *Config, upserver string, ch chan<- string) {
     _, err = callMethod("photos.save", params)
     if err != nil {
         ch <- fmt.Sprintf("%.2fs ошибка, не удалось сохранить картинки. err = %v",
-                time.Since(start).Seconds(), err)
+            time.Since(start).Seconds(), err)
     } else {
         ch <- fmt.Sprintf("%.2fs ok, картинки успешно сохранены.",
-                time.Since(start).Seconds())
+            time.Since(start).Seconds())
     }
 }
 
