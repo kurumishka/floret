@@ -104,7 +104,7 @@ func parseConfigAttachments(picsPath, capsPath string) (*Attachments, error) {
     if !strings.HasSuffix(picsPath, "/") {
         picsPath += "/"
     }
-    logging(false, "инициализируем байтовые массивы для картинок...")
+    logging(false, "инициализируем картинки...")
     var (
         failed    = 0
         predicate = func(name string) bool {
@@ -141,6 +141,7 @@ func parseConfig() *Config {
         logging(false, "ошибка, не удалось прочесть файл конфига.")
         logging(false, "будут насильно использованы значения флагов -t, -gid, -aid.")
     } else {
+        logging(true, "OK, конфиг успешно инициализирован.")
         config.Credits = *credits
     }
     logging(true, "получаем список картинок и описаний...")
@@ -154,7 +155,7 @@ func parseConfig() *Config {
         os.Exit(2)
     }
     setConfigFlags(&config)
-    logging(false, "ok, необходимые данные получены.")
+    logging(false, "OK, необходимые данные получены.")
     logging(true, config)
     return &config
 }
@@ -174,7 +175,7 @@ func upload(config *Config, upserver string, ch chan<- string) {
     start := time.Now()
     serverAnswer, err := uploadOnServer(config, upserver)
     if err != nil {
-        ch <- fmt.Sprintf("%.2fs err, upload_on_server, %v",
+        ch <- fmt.Sprintf("%.2fs ERR, upload_on_server, %v",
             time.Since(start).Seconds(), err)
         return
     }
@@ -192,10 +193,10 @@ func upload(config *Config, upserver string, ch chan<- string) {
     }
     _, err = callMethod("photos.save", params)
     if err != nil {
-        ch <- fmt.Sprintf("%.2fs err, photos.save, %v",
+        ch <- fmt.Sprintf("%.2fs ERR, photos.save, %v",
             time.Since(start).Seconds(), err)
     } else {
-        ch <- fmt.Sprintf("%.2fs ok, картинки успешно сохранены.",
+        ch <- fmt.Sprintf("%.2fs OK, картинки успешно сохранены.",
             time.Since(start).Seconds())
     }
 }
@@ -204,13 +205,13 @@ func main() {
     flag.Parse()
     fmt.Println(ART)
     config := parseConfig()
-    logging(false, "проверяем валидность конфига...")
+    logging(false, "проверяем конфиг...")
     ok := validateConfig(config)
     if !ok {
         logging(false, "фатальная ошибка, проверка конфига не удалась.")
         os.Exit(2)
     }
-    logging(false, "ok, конфиг прошёл проверку.")
+    logging(false, "OK, конфиг прошёл проверку.")
     logging(true, "получаем URL для загрузки картинок на сервер...")
     upserver, err := getUploadServer(config)
     if err != nil {
@@ -218,7 +219,7 @@ func main() {
         logging(false, "фатальная ошибка, не удалось получить URL для загрузки.")
         os.Exit(2)
     }
-    logging(true, "ok, UPSERVER:", upserver)
+    logging(true, "OK, UPSERVER:", upserver)
 
     answer, err := uploadOnServer(config, upserver)
     if err != nil {
@@ -242,5 +243,5 @@ func main() {
         logging(true, fmt.Sprintf("TIMEOUT: %d секунд.", *timeout))
         time.Sleep(time.Second * time.Duration(*timeout))
     }
-    logging(false, "успешно завершено.")
+    logging(false, "OK, успешно завершено.")
 }
