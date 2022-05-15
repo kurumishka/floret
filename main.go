@@ -25,7 +25,7 @@ const (
 
 var (
     verbose  = flag.Bool("v", false, "подробные логи.")
-    colorize = flag.Bool("c", false, "расскрашивать картинки.")
+    colorize = flag.Bool("c", false, "расскрашивать картинки. (не реализовано)")
     noCaps   = flag.Bool("no-caps", false, "не прикреплять описания.")
 
     token = flag.String("token", "", "использовать заданный токен.")
