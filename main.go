@@ -14,6 +14,13 @@ import (
 
 const (
     BUFSIZE = 2048
+    ART     = `
+      ________                __ 
+     / ____/ /___  ________  / /_
+    / /_  / / __ \/ ___/ _ \/ __/
+   / __/ / / /_/ / /  /  __/ /_  
+  /_/   /_/\____/_/   \___/\__/  
+`
 )
 
 var (
@@ -193,6 +200,7 @@ func upload(config *Config, upserver string, ch chan<- string) {
 
 func main() {
     flag.Parse()
+    fmt.Println(ART)
     config := parseConfig()
     logging(false, "проверяем валидность конфига...")
     ok := validateConfig(config)
