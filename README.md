@@ -11,7 +11,7 @@
 ```bash
 $ git clone https://github.com/ketsushiri/floret.git
 $ cd floret
-$ go build -o floret main.go api.go
+$ go build
 ```
 
 ## License
