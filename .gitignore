@@ -15,7 +15,7 @@
 *.swp
 
 # bin
-main
+floret
 
 devconfig.json
 release/*
