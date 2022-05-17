@@ -204,6 +204,9 @@ func upload(config *Config, upserver string, ch chan<- string) {
 func main() {
 	flag.Parse()
 	fmt.Println(ART)
+
+	log.SetFlags(log.Ltime)
+
 	config := parseConfig()
 	logging(false, "проверяем конфиг...")
 	ok := validateConfig(config)
