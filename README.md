@@ -14,6 +14,9 @@ $ cd floret
 $ go build
 ```
 
+## Ошибки
+[Ошибки, пожелания.](https://github.com/ketsushiri/floret/issues)
+
 ## License
 MIT
 
