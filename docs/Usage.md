@@ -11,4 +11,8 @@ $ floret [flags]
 Далее можно запускать без указания каких-либо дополнительных флагов.
 
 ## Windows
-TODO: compile and write.
+Запускать из командной строки (cmd), предварительно перейдя в директорию с `floret.exe`:
+```powershell
+> cd E:\full\path
+E:\full\path > floret.exe [flags]
+```
